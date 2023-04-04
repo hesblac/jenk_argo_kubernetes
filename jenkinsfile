@@ -1,0 +1,38 @@
+pipeline{
+    agent any
+    environment{
+        DOCKERHUB_USERNAME = "hesblac"
+        APP_NAME = "gitops-argo-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_NAME = "${DOCKERHUB_USERNAME}" + "/" + "${APP_NAME}"
+        REGISTRY_CREDS = "dockerhub"
+    }
+    stages{
+        stage('Cleanup workspace'){
+            steps{
+                script{
+                    cleanWs()
+                }
+            }
+        }
+        stage('checkout SCM'){
+            steps{
+                script{
+                    git credentials: 'github',
+                    url: 'https://github.com/hesblac/jenk_argo_kubernetes.git',
+                    branch: 'main'
+                   // withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
+            //}
+                }
+            }
+        }
+        stage('Build docker image'){
+            steps{  
+                script{
+                    docker_image = docker.build "${IMAGE_NAME}"
+                   // def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}", "-f Dockerfile .")                }
+            }
+        }
+    }
+}
+
